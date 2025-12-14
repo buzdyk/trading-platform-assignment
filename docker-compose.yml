@@ -1,4 +1,65 @@
 services:
+  app:
+    build:
+      context: ./api
+      dockerfile: Dockerfile
+    env_file:
+      - ./api/.env.docker
+    volumes:
+      - ./api:/var/www/html
+    depends_on:
+      - pgsql
+      - redis
+    networks:
+      - trading
+
+  caddy:
+    image: caddy:2-alpine
+    ports:
+      - "8080:80"
+      - "8443:443"
+    volumes:
+      - ./api/Caddyfile:/etc/caddy/Caddyfile
+      - ./api:/var/www/html
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - app
+    networks:
+      - trading
+
+  pgsql:
+    image: postgres:16-alpine
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: trading
+      POSTGRES_USER: trading
+      POSTGRES_PASSWORD: secret
+    volumes:
+      - pgsql_data:/var/lib/postgresql/data
+    networks:
+      - trading
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U trading"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - trading
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
   soketi:
     image: quay.io/soketi/soketi:1.6-16-debian
     ports:
@@ -6,6 +67,33 @@ services:
       - "9601:9601"
     environment:
       SOKETI_DEBUG: "1"
-      SOKETI_DEFAULT_APP_ID: "app-id"
-      SOKETI_DEFAULT_APP_KEY: "app-key"
-      SOKETI_DEFAULT_APP_SECRET: "app-secret"
+      SOKETI_DEFAULT_APP_ID: app-id
+      SOKETI_DEFAULT_APP_KEY: app-key
+      SOKETI_DEFAULT_APP_SECRET: app-secret
+    networks:
+      - trading
+
+  frontend:
+    image: node:20-alpine
+    working_dir: /app
+    ports:
+      - "5173:5173"
+    env_file:
+      - ./frontend/.env.docker
+    volumes:
+      - ./frontend:/app
+    command: sh -c "npm install && npm run dev -- --host"
+    depends_on:
+      - caddy
+    networks:
+      - trading
+
+networks:
+  trading:
+    driver: bridge
+
+volumes:
+  pgsql_data:
+  redis_data:
+  caddy_data:
+  caddy_config:
