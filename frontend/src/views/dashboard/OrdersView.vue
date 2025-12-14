@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useTradingStore } from '@/stores/trading'
 import { useAuthStore } from '@/stores/auth'
 import OrderForm from '@/components/OrderForm.vue'
@@ -8,6 +8,10 @@ const trading = useTradingStore()
 const auth = useAuthStore()
 const cancelling = ref<number | null>(null)
 const orderFormRef = ref<InstanceType<typeof OrderForm> | null>(null)
+
+const sortedOrders = computed(() =>
+  [...trading.orders].sort((a, b) => Number(a.price) - Number(b.price))
+)
 
 onMounted(async () => {
   await trading.fetchOrders()
@@ -66,7 +70,7 @@ function fillForm(symbolId: number, price: string, amount: string, side: 'buy' |
             </tr>
           </thead>
           <tbody class="divide-y divide-gray-200 bg-white">
-            <tr v-for="order in trading.orders" :key="order.id">
+            <tr v-for="order in sortedOrders" :key="order.id">
               <td class="whitespace-nowrap px-6 py-4 text-sm text-gray-500">
                 {{ order.id }}
               </td>
@@ -111,7 +115,7 @@ function fillForm(symbolId: number, price: string, amount: string, side: 'buy' |
                 </button>
               </td>
             </tr>
-            <tr v-if="trading.orders.length === 0">
+            <tr v-if="sortedOrders.length === 0">
               <td colspan="8" class="px-6 py-4 text-center text-sm text-gray-500">
                 No open orders
               </td>

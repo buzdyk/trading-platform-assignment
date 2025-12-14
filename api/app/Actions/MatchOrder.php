@@ -30,6 +30,7 @@ class MatchOrder
         $query = Order::where('symbol_id', $order->symbol_id)
             ->where('status', Order::STATUS_OPEN)
             ->where('user_id', '!=', $order->user_id)
+            ->where('amount', $order->amount) // No partial matching - amounts must be equal
             ->lockForUpdate();
 
         if ($order->isBuy()) {

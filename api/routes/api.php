@@ -4,6 +4,8 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\OrdersController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SymbolsController;
+use App\Http\Resources\TradeResource;
+use App\Models\Trade;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Broadcast;
 use Illuminate\Support\Facades\Route;
@@ -20,6 +22,16 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/orders', [OrdersController::class, 'index']);
     Route::post('/orders', [OrdersController::class, 'store'])->middleware('throttle:60,1');
     Route::post('/orders/{id}/cancel', [OrdersController::class, 'cancel'])->middleware('throttle:60,1');
+
+    Route::get('/trades', function (Request $request) {
+        $trades = Trade::with('symbol')
+            ->where('buyer_id', $request->user()->id)
+            ->orWhere('seller_id', $request->user()->id)
+            ->orderByDesc('created_at')
+            ->get();
+
+        return TradeResource::collection($trades);
+    });
 
     Route::post('/broadcasting/auth', function (Request $request) {
         return Broadcast::auth($request);

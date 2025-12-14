@@ -32,3 +32,14 @@ export interface Order {
   user?: string
   created_at: string
 }
+
+export interface Trade {
+  id: number
+  symbol: string
+  side: 'buy' | 'sell'
+  price: string
+  amount: string
+  total: string
+  commission: string
+  created_at: string
+}

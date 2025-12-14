@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-import type { Asset, Order, Symbol } from '@/types/models'
+import type { Asset, Order, Symbol, Trade } from '@/types/models'
 import { api } from '@/api/client'
 
 export const useTradingStore = defineStore('trading', () => {
@@ -8,6 +8,7 @@ export const useTradingStore = defineStore('trading', () => {
   const assets = ref<Asset[]>([])
   const orders = ref<Order[]>([])
   const symbols = ref<Symbol[]>([])
+  const trades = ref<Trade[]>([])
   const loading = ref(false)
 
   async function fetchProfile(): Promise<void> {
@@ -25,6 +26,11 @@ export const useTradingStore = defineStore('trading', () => {
   async function fetchSymbols(): Promise<void> {
     const response = await api.get('/symbols')
     symbols.value = response.data.data
+  }
+
+  async function fetchTrades(): Promise<void> {
+    const response = await api.get('/trades')
+    trades.value = response.data.data
   }
 
   async function createOrder(data: {
@@ -66,10 +72,12 @@ export const useTradingStore = defineStore('trading', () => {
     assets,
     orders,
     symbols,
+    trades,
     loading,
     fetchProfile,
     fetchOrders,
     fetchSymbols,
+    fetchTrades,
     createOrder,
     cancelOrder,
     updateOrder,
