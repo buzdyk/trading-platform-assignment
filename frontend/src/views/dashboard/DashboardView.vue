@@ -31,20 +31,29 @@ provide('setActionButton', (button: ActionButton | null) => {
         <ul class="space-y-1">
           <li>
             <RouterLink
-              to="/dashboard/today"
+              to="/dashboard/wallet"
               class="block rounded px-3 py-2 text-gray-700 hover:bg-gray-100"
               active-class="bg-gray-100 font-bold text-gray-900"
             >
-              Today
+              Wallet
             </RouterLink>
           </li>
           <li>
             <RouterLink
-              to="/dashboard/month"
+              to="/dashboard/orders"
               class="block rounded px-3 py-2 text-gray-700 hover:bg-gray-100"
               active-class="bg-gray-100 font-bold text-gray-900"
             >
-              Month
+              Orders
+            </RouterLink>
+          </li>
+          <li>
+            <RouterLink
+              to="/dashboard/trade"
+              class="block rounded px-3 py-2 text-gray-700 hover:bg-gray-100"
+              active-class="bg-gray-100 font-bold text-gray-900"
+            >
+              Trade
             </RouterLink>
           </li>
         </ul>
