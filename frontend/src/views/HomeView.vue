@@ -6,7 +6,7 @@
   <div class="flex min-h-screen items-center justify-center">
     <div class="text-center">
       <h1 class="text-4xl font-bold">Trading Platform</h1>
-      <p class="mt-4 text-gray-600">Resource tracker for families</p>
+      <p class="mt-4 text-gray-600">Trade crypto with limit orders</p>
       <div class="mt-8 space-x-4">
         <router-link
           to="/login"
