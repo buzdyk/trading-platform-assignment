@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\OrdersController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 
@@ -10,4 +11,8 @@ Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth:sanc
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/profile', [ProfileController::class, 'show']);
+
+    Route::get('/orders', [OrdersController::class, 'index']);
+    Route::post('/orders', [OrdersController::class, 'store']);
+    Route::post('/orders/{id}/cancel', [OrdersController::class, 'cancel']);
 });

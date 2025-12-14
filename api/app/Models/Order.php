@@ -5,6 +5,19 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+/**
+ * @property int $id
+ * @property int $user_id
+ * @property int $symbol_id
+ * @property string $side
+ * @property string $price
+ * @property string $amount
+ * @property int $status
+ * @property \Illuminate\Support\Carbon $created_at
+ * @property \Illuminate\Support\Carbon $updated_at
+ * @property-read User $user
+ * @property-read Symbol $symbol
+ */
 class Order extends Model
 {
     public const STATUS_OPEN = 1;
