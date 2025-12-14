@@ -1,14 +1,18 @@
 <script setup lang="ts">
-import { ref, provide } from 'vue'
-import { useRoute } from 'vue-router'
+import { ref, provide, onMounted } from 'vue'
 import type { ActionButton } from '@/types/action-button'
+import { useEcho } from '@/composables/useEcho'
 
-const route = useRoute()
+const { subscribe } = useEcho()
 
 const actionButton = ref<ActionButton | null>(null)
 
 provide('setActionButton', (button: ActionButton | null) => {
   actionButton.value = button
+})
+
+onMounted(() => {
+  subscribe()
 })
 </script>
 

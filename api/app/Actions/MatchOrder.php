@@ -2,6 +2,7 @@
 
 namespace App\Actions;
 
+use App\Events\OrderMatched;
 use App\Models\Asset;
 use App\Models\Order;
 use App\Models\Trade;
@@ -22,7 +23,13 @@ class MatchOrder
             return null;
         }
 
-        return DB::transaction(fn (): Trade => $this->executeTrade($order, $counterOrder));
+        $trade = DB::transaction(fn (): Trade => $this->executeTrade($order, $counterOrder));
+
+        // Notify both buyer and seller
+        OrderMatched::dispatch($trade, $trade->buyer_id);
+        OrderMatched::dispatch($trade, $trade->seller_id);
+
+        return $trade;
     }
 
     private function findCounterOrder(Order $order): ?Order

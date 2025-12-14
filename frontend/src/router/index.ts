@@ -2,12 +2,12 @@ import { createRouter, createWebHistory } from 'vue-router'
 import type { NavigationGuardNext, RouteLocationNormalized } from 'vue-router'
 
 // Route guards
-const requireAuth = (to: RouteLocationNormalized, from: RouteLocationNormalized, next: NavigationGuardNext) => {
+const requireAuth = (_to: RouteLocationNormalized, _from: RouteLocationNormalized, next: NavigationGuardNext) => {
   const token = localStorage.getItem('auth_token')
   token ? next() : next({ name: 'login' })
 }
 
-const guestOnly = (to: RouteLocationNormalized, from: RouteLocationNormalized, next: NavigationGuardNext) => {
+const guestOnly = (_to: RouteLocationNormalized, _from: RouteLocationNormalized, next: NavigationGuardNext) => {
   const token = localStorage.getItem('auth_token')
   token ? next({ name: 'dashboard' }) : next()
 }
