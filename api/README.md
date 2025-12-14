@@ -1,6 +1,6 @@
-# HOUSEHOLD API
+# Trading Platform API
 
-Laravel 12 backend API for the HOUSEHOLD resource tracker application.
+Laravel 12 backend API for a cryptocurrency trading platform.
 
 ## Requirements
 
@@ -11,64 +11,48 @@ Laravel 12 backend API for the HOUSEHOLD resource tracker application.
 
 ```bash
 # Development server
-composer dev
-# Or directly:
 php artisan serve
-
-# Run tests
-composer test
-# Or directly:
-php artisan test
 
 # Run database migrations
 php artisan migrate
 
-# Fresh migration (drop all tables and re-migrate)
-php artisan migrate:fresh
+# Fresh migration with seed data
+php artisan migrate:fresh --seed
 
-# Create a new migration
-php artisan make:migration create_table_name
-
-# Create a new model
-php artisan make:model ModelName
-
-# Create a controller
-php artisan make:controller ControllerName
-
-# Run code style fixer (Laravel Pint)
-vendor/bin/pint
-
-# Run PHPUnit tests directly
-vendor/bin/phpunit
+# Run tests
+php artisan test
 
 # Laravel Tinker (REPL)
 php artisan tinker
-
-# Clear application cache
-php artisan config:clear
-php artisan cache:clear
-php artisan route:clear
-php artisan view:clear
 ```
 
 ## Database Structure
 
-Current migrations establish:
-- **users**: Standard Laravel user authentication
+### Tables
+- **users** - User accounts with USD balance
+- **symbols** - Trading symbols (BTC, ETH)
+- **assets** - User crypto holdings per symbol
+- **orders** - Limit orders (buy/sell)
+- **trades** - Executed trade history
+
+### Decimal Precision
+
+All monetary columns use `decimal(18, 8)`:
+
+| Type | Precision | Rationale |
+|------|-----------|-----------|
+| USD (balance, total, commission) | 8 decimals | Avoids rounding errors in calculations. Display rounds to 2. |
+| Crypto amounts (BTC, ETH) | 8 decimals | BTC standard is 8 (satoshi). ETH has 18 (wei) but exchanges use 6-8 for trading. |
+| Price (USD/crypto) | 8 decimals | High precision for rate calculations |
+
+**Sources:**
+- BTC uses 8 decimals (satoshi = 0.00000001 BTC)
+- ETH technically has 18 decimals (wei) but major exchanges like Kraken use 6-8 for trading pairs
+- See: [Gemini Crypto Denominations](https://www.gemini.com/cryptopedia/satoshi-value-gwei-to-ether-to-wei-converter-eth-gwei)
 
 ## Code Organization
 
-- **Models**: `app/Models/` - Eloquent models
-- **Controllers**: `app/Http/Controllers/` - HTTP request handlers
-- **Migrations**: `database/migrations/` - Database schema definitions
-- **Routes**: `routes/web.php` - Web routes, `routes/console.php` - Artisan commands
-- **Config**: `config/` - Application configuration files
-- **Tests**: `tests/` - PHPUnit tests
-
-## Laravel Conventions
-
-- Use Eloquent ORM for database operations
-- Follow PSR-4 autoloading: `App\` namespace maps to `app/` directory
-- Migration naming: `YYYY_MM_DD_HHMMSS_descriptive_name.php`
-- Use resource controllers for RESTful operations
-- Leverage Laravel's built-in authentication system
+- **Models**: `app/Models/` - User, Symbol, Asset, Order, Trade
+- **Controllers**: `app/Http/Controllers/`
+- **Migrations**: `database/migrations/`
+- **Routes**: `routes/api.php` - API endpoints
