@@ -201,7 +201,7 @@ class MatchOrderTest extends TestCase
         $this->assertNull($trade);
     }
 
-    public function test_matches_at_sell_price_when_buy_price_higher(): void
+    public function test_buy_taker_gets_maker_sell_price(): void
     {
         $seller = User::factory()->create(['balance' => '0']);
         $buyer = User::factory()->create(['balance' => '100000', 'locked_balance' => '55000']);
@@ -213,6 +213,7 @@ class MatchOrderTest extends TestCase
             'locked_amount' => '1',
         ]);
 
+        // Maker: sell order at 50k (already on book)
         $sellOrder = Order::create([
             'user_id' => $seller->id,
             'symbol_id' => $this->btc->id,
@@ -222,20 +223,68 @@ class MatchOrderTest extends TestCase
             'status' => Order::STATUS_OPEN,
         ]);
 
+        // Taker: buy order at 55k (willing to pay more)
         $buyOrder = Order::create([
             'user_id' => $buyer->id,
             'symbol_id' => $this->btc->id,
             'side' => Order::SIDE_BUY,
-            'price' => '55000', // Higher than sell
+            'price' => '55000',
             'amount' => '1',
             'status' => Order::STATUS_OPEN,
         ]);
 
         $trade = ($this->action)($buyOrder);
 
-        // Trade should execute at seller's price
+        // Trade executes at maker's (sell) price - buyer gets better deal
         $this->assertEquals('50000.00000000', $trade->price);
         $this->assertEquals('50000.00000000', $trade->total);
+
+        // Verify seller receives the trade price
+        $seller->refresh();
+        $this->assertEquals('50000.00000000', $seller->balance);
+    }
+
+    public function test_sell_taker_gets_maker_buy_price(): void
+    {
+        $buyer = User::factory()->create(['balance' => '100000', 'locked_balance' => '55000']);
+        $seller = User::factory()->create(['balance' => '0']);
+
+        Asset::create([
+            'user_id' => $seller->id,
+            'symbol_id' => $this->btc->id,
+            'amount' => '1',
+            'locked_amount' => '1',
+        ]);
+
+        // Maker: buy order at 55k (already on book, willing to pay more)
+        $buyOrder = Order::create([
+            'user_id' => $buyer->id,
+            'symbol_id' => $this->btc->id,
+            'side' => Order::SIDE_BUY,
+            'price' => '55000',
+            'amount' => '1',
+            'status' => Order::STATUS_OPEN,
+        ]);
+
+        // Taker: sell order at 50k (asking less)
+        $sellOrder = Order::create([
+            'user_id' => $seller->id,
+            'symbol_id' => $this->btc->id,
+            'side' => Order::SIDE_SELL,
+            'price' => '50000',
+            'amount' => '1',
+            'status' => Order::STATUS_OPEN,
+        ]);
+
+        $trade = ($this->action)($sellOrder);
+
+        // Trade executes at maker's (buy) price - seller gets better deal
+        $this->assertEquals('55000.00000000', $trade->price);
+        $this->assertEquals('55000.00000000', $trade->total);
+
+        // Verify seller receives the higher price
+        $seller->refresh();
+        $this->assertEquals('55000.00000000', $seller->balance);
     }
 
     public function test_does_not_match_own_orders(): void

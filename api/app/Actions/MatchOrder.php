@@ -60,8 +60,8 @@ class MatchOrder
         $buyOrder = $newOrder->isBuy() ? $newOrder : $counterOrder;
         $sellOrder = $newOrder->isSell() ? $newOrder : $counterOrder;
 
-        // Use the sell order's price (maker gets their price)
-        $tradePrice = $sellOrder->price;
+        // Use the maker's (counter order's) price - taker gets best available price
+        $tradePrice = $counterOrder->price;
         $tradeAmount = $sellOrder->amount;
         $total = bcmul($tradePrice, $tradeAmount, 8);
 
