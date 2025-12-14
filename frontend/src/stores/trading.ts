@@ -1,0 +1,60 @@
+import { defineStore } from 'pinia'
+import { ref } from 'vue'
+import type { Asset, Order, Symbol } from '@/types/models'
+import { api } from '@/api/client'
+
+export const useTradingStore = defineStore('trading', () => {
+  const balance = ref<string>('0')
+  const assets = ref<Asset[]>([])
+  const orders = ref<Order[]>([])
+  const symbols = ref<Symbol[]>([])
+  const loading = ref(false)
+
+  async function fetchProfile(): Promise<void> {
+    const response = await api.get('/profile')
+    balance.value = response.data.balance
+    assets.value = response.data.assets
+  }
+
+  async function fetchOrders(symbolId?: number): Promise<void> {
+    const params = symbolId ? { symbol_id: symbolId } : {}
+    const response = await api.get('/orders', { params })
+    orders.value = response.data.data
+  }
+
+  async function fetchSymbols(): Promise<void> {
+    const response = await api.get('/symbols')
+    symbols.value = response.data.data
+  }
+
+  async function createOrder(data: {
+    symbol_id: number
+    side: 'buy' | 'sell'
+    price: string
+    amount: string
+  }): Promise<Order> {
+    const response = await api.post('/orders', data)
+    await fetchOrders()
+    await fetchProfile()
+    return response.data.order
+  }
+
+  async function cancelOrder(orderId: number): Promise<void> {
+    await api.post(`/orders/${orderId}/cancel`)
+    await fetchOrders()
+    await fetchProfile()
+  }
+
+  return {
+    balance,
+    assets,
+    orders,
+    symbols,
+    loading,
+    fetchProfile,
+    fetchOrders,
+    fetchSymbols,
+    createOrder,
+    cancelOrder,
+  }
+})
