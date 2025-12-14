@@ -14,6 +14,7 @@ use Laravel\Sanctum\HasApiTokens;
  * @property string $name
  * @property string $email
  * @property string $balance
+ * @property string $locked_balance
  * @property \Illuminate\Support\Carbon|null $email_verified_at
  * @property \Illuminate\Support\Carbon $created_at
  * @property \Illuminate\Support\Carbon $updated_at
@@ -29,6 +30,7 @@ class User extends Authenticatable
         'email',
         'password',
         'balance',
+        'locked_balance',
     ];
 
     protected $hidden = [
@@ -42,6 +44,7 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'balance' => 'decimal:8',
+            'locked_balance' => 'decimal:8',
         ];
     }
 

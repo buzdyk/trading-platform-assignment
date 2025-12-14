@@ -113,6 +113,12 @@ class OrdersControllerTest extends TestCase
     public function test_can_create_sell_order(): void
     {
         $user = User::factory()->create();
+        \App\Models\Asset::create([
+            'user_id' => $user->id,
+            'symbol_id' => $this->eth->id,
+            'amount' => 10.0,
+            'locked_amount' => 0,
+        ]);
 
         $response = $this->actingAs($user)->postJson('/api/orders', [
             'symbol_id' => $this->eth->id,
