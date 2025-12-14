@@ -38,6 +38,17 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
+  async function fetchUser(): Promise<void> {
+    if (!token.value) return
+    try {
+      const response = await api.get('/profile')
+      user.value = response.data.user
+    } catch {
+      token.value = null
+      localStorage.removeItem('auth_token')
+    }
+  }
+
   function setUser(newUser: User) {
     user.value = newUser
   }
@@ -49,6 +60,7 @@ export const useAuthStore = defineStore('auth', () => {
     login,
     register,
     logout,
+    fetchUser,
     setUser,
   }
 })

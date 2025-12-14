@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
 import { useTradingStore } from '@/stores/trading'
+import { useAuthStore } from '@/stores/auth'
 import OrderForm from '@/components/OrderForm.vue'
 
 const trading = useTradingStore()
+const auth = useAuthStore()
 const cancelling = ref<number | null>(null)
 
 onMounted(async () => {
@@ -82,6 +84,7 @@ async function handleCancel(orderId: number): Promise<void> {
               </td>
               <td class="whitespace-nowrap px-6 py-4 text-right text-sm">
                 <button
+                  v-if="order.user_id === auth.user?.id"
                   @click="handleCancel(order.id)"
                   :disabled="cancelling === order.id"
                   class="text-red-600 hover:text-red-900 disabled:opacity-50"

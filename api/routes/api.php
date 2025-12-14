@@ -16,6 +16,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/profile', [ProfileController::class, 'show']);
 
     Route::get('/orders', [OrdersController::class, 'index']);
-    Route::post('/orders', [OrdersController::class, 'store']);
-    Route::post('/orders/{id}/cancel', [OrdersController::class, 'cancel']);
+    Route::post('/orders', [OrdersController::class, 'store'])->middleware('throttle:60,1');
+    Route::post('/orders/{id}/cancel', [OrdersController::class, 'cancel'])->middleware('throttle:60,1');
 });

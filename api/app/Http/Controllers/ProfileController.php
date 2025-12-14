@@ -14,6 +14,11 @@ class ProfileController extends Controller
         $user->load('assets.symbol');
 
         return response()->json([
+            'user' => [
+                'id' => $user->id,
+                'name' => $user->name,
+                'email' => $user->email,
+            ],
             'balance' => $user->balance,
             'assets' => AssetResource::collection($user->assets),
         ]);

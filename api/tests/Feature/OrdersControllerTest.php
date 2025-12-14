@@ -225,7 +225,7 @@ class OrdersControllerTest extends TestCase
 
         $response = $this->actingAs($other)->postJson("/api/orders/{$order->id}/cancel");
 
-        $response->assertStatus(404);
+        $response->assertStatus(403);
     }
 
     public function test_cannot_cancel_already_cancelled_order(): void
@@ -242,7 +242,7 @@ class OrdersControllerTest extends TestCase
 
         $response = $this->actingAs($user)->postJson("/api/orders/{$order->id}/cancel");
 
-        $response->assertStatus(404);
+        $response->assertStatus(403);
     }
 
     public function test_cannot_cancel_filled_order(): void
@@ -259,7 +259,7 @@ class OrdersControllerTest extends TestCase
 
         $response = $this->actingAs($user)->postJson("/api/orders/{$order->id}/cancel");
 
-        $response->assertStatus(404);
+        $response->assertStatus(403);
     }
 
     public function test_unauthenticated_cannot_access_orders(): void

@@ -64,10 +64,9 @@ class OrdersController extends Controller
 
     public function cancel(Request $request, int $id): JsonResponse
     {
-        $order = Order::where('id', $id)
-            ->where('user_id', $request->user()->id)
-            ->where('status', Order::STATUS_OPEN)
-            ->firstOrFail();
+        $order = Order::findOrFail($id);
+
+        $this->authorize('cancel', $order);
 
         try {
             ($this->cancelOrder)($order);
