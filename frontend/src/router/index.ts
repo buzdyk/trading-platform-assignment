@@ -65,11 +65,6 @@ const router = createRouter({
                   name: 'orders',
                   component: () => import('@/views/dashboard/OrdersView.vue'),
                 },
-                {
-                  path: 'trade',
-                  name: 'trade',
-                  component: () => import('@/views/dashboard/TradeView.vue'),
-                },
               ],
             },
           ],

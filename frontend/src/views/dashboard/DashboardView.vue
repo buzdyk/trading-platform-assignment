@@ -51,15 +51,6 @@ onMounted(() => {
               Orders
             </RouterLink>
           </li>
-          <li>
-            <RouterLink
-              to="/dashboard/trade"
-              class="block rounded px-3 py-2 text-gray-700 hover:bg-gray-100"
-              active-class="bg-gray-100 font-bold text-gray-900"
-            >
-              Trade
-            </RouterLink>
-          </li>
         </ul>
       </nav>
 
