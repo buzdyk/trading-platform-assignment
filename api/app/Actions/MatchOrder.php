@@ -2,12 +2,10 @@
 
 namespace App\Actions;
 
-use App\Events\OrderMatched;
 use App\Models\Asset;
 use App\Models\Order;
 use App\Models\Trade;
 use App\Models\User;
-use Illuminate\Support\Facades\DB;
 
 class MatchOrder
 {
@@ -23,13 +21,8 @@ class MatchOrder
             return null;
         }
 
-        $trade = DB::transaction(fn (): Trade => $this->executeTrade($order, $counterOrder));
-
-        // Notify both buyer and seller
-        OrderMatched::dispatch($trade, $trade->buyer_id);
-        OrderMatched::dispatch($trade, $trade->seller_id);
-
-        return $trade;
+        // No nested transaction - already in one from PlaceBuyOrder/PlaceSellOrder
+        return $this->executeTrade($order, $counterOrder);
     }
 
     private function findCounterOrder(Order $order): ?Order
@@ -60,6 +53,9 @@ class MatchOrder
 
     private function executeTrade(Order $newOrder, Order $counterOrder): Trade
     {
+        // Re-lock the counter order to ensure fresh state within this transaction
+        $counterOrder = Order::lockForUpdate()->findOrFail($counterOrder->id);
+
         $buyOrder = $newOrder->isBuy() ? $newOrder : $counterOrder;
         $sellOrder = $newOrder->isSell() ? $newOrder : $counterOrder;
 
@@ -80,14 +76,6 @@ class MatchOrder
         $buyerLockedTotal = bcmul($buyOrder->price, $buyOrder->amount, 8);
         $buyer->locked_balance = bcsub($buyer->locked_balance, $buyerLockedTotal, 8);
         $buyer->balance = bcsub($buyer->balance, $total, 8);
-
-        // If buyer locked more than trade total (due to higher limit price), refund difference
-        $refund = bcsub($buyerLockedTotal, $total, 8);
-        if (bccomp($refund, '0', 8) > 0) {
-            // Refund is already released by subtracting buyerLockedTotal from locked_balance
-            // No additional action needed as balance wasn't reduced by the refund amount
-        }
-
         $buyer->save();
 
         $seller->balance = bcadd($seller->balance, $total, 8);
@@ -113,11 +101,10 @@ class MatchOrder
         $buyerAsset->amount = bcadd($buyerAsset->amount, $buyerReceives, 8);
         $buyerAsset->save();
 
-        // Mark orders as filled
+        // Mark orders as filled (observer broadcasts updates)
         $buyOrder->update(['status' => Order::STATUS_FILLED]);
         $sellOrder->update(['status' => Order::STATUS_FILLED]);
 
-        // Create trade record
         return Trade::create([
             'buy_order_id' => $buyOrder->id,
             'sell_order_id' => $sellOrder->id,

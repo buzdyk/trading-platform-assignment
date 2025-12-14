@@ -22,8 +22,8 @@ async function handleCancel(orderId: number): Promise<void> {
   }
 }
 
-function fillForm(price: string, amount: string, side: 'buy' | 'sell'): void {
-  orderFormRef.value?.fill(price, amount, side)
+function fillForm(symbolId: number, price: string, amount: string, side: 'buy' | 'sell'): void {
+  orderFormRef.value?.fill(symbolId, price, amount, side)
 }
 </script>
 
@@ -39,6 +39,9 @@ function fillForm(price: string, amount: string, side: 'buy' | 'sell'): void {
         <table class="min-w-full divide-y divide-gray-200">
           <thead class="bg-gray-50">
             <tr>
+              <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                ID
+              </th>
               <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
                 Symbol
               </th>
@@ -64,6 +67,9 @@ function fillForm(price: string, amount: string, side: 'buy' | 'sell'): void {
           </thead>
           <tbody class="divide-y divide-gray-200 bg-white">
             <tr v-for="order in trading.orders" :key="order.id">
+              <td class="whitespace-nowrap px-6 py-4 text-sm text-gray-500">
+                {{ order.id }}
+              </td>
               <td class="whitespace-nowrap px-6 py-4 text-sm font-medium text-gray-900">
                 {{ order.symbol }}
               </td>
@@ -97,7 +103,8 @@ function fillForm(price: string, amount: string, side: 'buy' | 'sell'): void {
                   {{ cancelling === order.id ? 'Cancelling...' : 'Cancel' }}
                 </button>
                 <button
-                  @click="fillForm(order.price, order.amount, order.side)"
+                  v-if="order.user_id !== auth.user?.id"
+                  @click="fillForm(order.symbol_id, order.price, order.amount, order.side)"
                   class="text-blue-600 hover:text-blue-900"
                 >
                   Fill
@@ -105,7 +112,7 @@ function fillForm(price: string, amount: string, side: 'buy' | 'sell'): void {
               </td>
             </tr>
             <tr v-if="trading.orders.length === 0">
-              <td colspan="7" class="px-6 py-4 text-center text-sm text-gray-500">
+              <td colspan="8" class="px-6 py-4 text-center text-sm text-gray-500">
                 No open orders
               </td>
             </tr>

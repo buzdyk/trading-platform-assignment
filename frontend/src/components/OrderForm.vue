@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import { onMounted, ref, computed } from 'vue'
 import { useTradingStore } from '@/stores/trading'
+import { useToastStore } from '@/stores/toast'
 import type { AxiosError } from 'axios'
 
 const trading = useTradingStore()
+const toast = useToastStore()
 
 const form = ref({
   symbol_id: null as number | null,
@@ -54,19 +56,26 @@ async function handleSubmit(): Promise<void> {
       price: form.value.price,
       amount: form.value.amount,
     })
+    toast.success(`${form.value.side.toUpperCase()} order placed successfully`)
     form.value.price = ''
     form.value.amount = ''
   } catch (err) {
-    const error = err as AxiosError<{ errors?: Record<string, string[]> }>
+    const error = err as AxiosError<{ errors?: Record<string, string[]>; message?: string }>
     if (error.response?.data?.errors) {
       errors.value = error.response.data.errors
+      toast.error(Object.values(error.response.data.errors).flat()[0])
+    } else if (error.response?.data?.message) {
+      toast.error(error.response.data.message)
+    } else {
+      toast.error('Failed to place order')
     }
   } finally {
     submitting.value = false
   }
 }
 
-function fill(price: string, amount: string, side: 'buy' | 'sell'): void {
+function fill(symbolId: number, price: string, amount: string, side: 'buy' | 'sell'): void {
+  form.value.symbol_id = symbolId
   form.value.price = price
   form.value.amount = amount
   form.value.side = side === 'buy' ? 'sell' : 'buy'

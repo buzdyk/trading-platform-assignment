@@ -56,99 +56,101 @@ class UserSeeder extends Seeder
             Asset::create([
                 'user_id' => $user->id,
                 'symbol_id' => $btc->id,
-                'amount' => $faker->randomFloat(8, 0.5, 5.0),
+                'amount' => $faker->randomFloat(8, 0.5, 2.0),
                 'locked_amount' => $faker->randomFloat(8, 0, 0.5),
             ]);
             Asset::create([
                 'user_id' => $user->id,
                 'symbol_id' => $eth->id,
-                'amount' => $faker->randomFloat(8, 5.0, 50.0),
+                'amount' => $faker->randomFloat(8, 10, 20.0),
                 'locked_amount' => $faker->randomFloat(8, 0, 5.0),
             ]);
         }
 
-        // Open BTC orders - sells (asks)
+        // Open BTC orders - sells (asks) ~$10k avg (0.05-0.15 BTC at ~$97k)
         foreach ($users as $user) {
             Order::create([
                 'user_id' => $user->id,
                 'symbol_id' => $btc->id,
                 'side' => 'sell',
                 'price' => $faker->randomFloat(2, 97000, 99000),
-                'amount' => $faker->randomFloat(8, 0.1, 0.8),
+                'amount' => $faker->randomFloat(8, 0.05, 0.15),
                 'status' => Order::STATUS_OPEN,
             ]);
         }
 
-        // Open BTC orders - buys (bids)
+        // Open BTC orders - buys (bids) ~$10k avg
         foreach ($users as $user) {
             Order::create([
                 'user_id' => $user->id,
                 'symbol_id' => $btc->id,
                 'side' => 'buy',
                 'price' => $faker->randomFloat(2, 93000, 96000),
-                'amount' => $faker->randomFloat(8, 0.1, 0.8),
+                'amount' => $faker->randomFloat(8, 0.05, 0.15),
                 'status' => Order::STATUS_OPEN,
             ]);
         }
 
-        // Open ETH orders - sells
+        // Open ETH orders - sells ~$10k avg (1.5-4 ETH at ~$3.7k)
         foreach ($users as $user) {
             Order::create([
                 'user_id' => $user->id,
                 'symbol_id' => $eth->id,
                 'side' => 'sell',
                 'price' => $faker->randomFloat(2, 3700, 4000),
-                'amount' => $faker->randomFloat(8, 1.0, 10.0),
+                'amount' => $faker->randomFloat(8, 1.5, 4.0),
                 'status' => Order::STATUS_OPEN,
             ]);
         }
 
-        // Open ETH orders - buys
+        // Open ETH orders - buys ~$10k avg
         foreach ($users as $user) {
             Order::create([
                 'user_id' => $user->id,
                 'symbol_id' => $eth->id,
                 'side' => 'buy',
                 'price' => $faker->randomFloat(2, 3300, 3600),
-                'amount' => $faker->randomFloat(8, 1.0, 10.0),
+                'amount' => $faker->randomFloat(8, 1.5, 4.0),
                 'status' => Order::STATUS_OPEN,
             ]);
         }
 
-        // Filled BTC orders (historical trades)
+        // Filled BTC orders (historical trades) ~$10k avg
         for ($i = 0; $i < 15; $i++) {
             Order::create([
                 'user_id' => $faker->randomElement($users)->id,
                 'symbol_id' => $btc->id,
                 'side' => $faker->randomElement(['buy', 'sell']),
                 'price' => $faker->randomFloat(2, 90000, 98000),
-                'amount' => $faker->randomFloat(8, 0.01, 0.5),
+                'amount' => $faker->randomFloat(8, 0.05, 0.15),
                 'status' => Order::STATUS_FILLED,
                 'created_at' => $faker->dateTimeBetween('-7 days', 'now'),
             ]);
         }
 
-        // Filled ETH orders (historical trades)
+        // Filled ETH orders (historical trades) ~$10k avg
         for ($i = 0; $i < 15; $i++) {
             Order::create([
                 'user_id' => $faker->randomElement($users)->id,
                 'symbol_id' => $eth->id,
                 'side' => $faker->randomElement(['buy', 'sell']),
                 'price' => $faker->randomFloat(2, 3200, 3900),
-                'amount' => $faker->randomFloat(8, 0.5, 8.0),
+                'amount' => $faker->randomFloat(8, 1.5, 4.0),
                 'status' => Order::STATUS_FILLED,
                 'created_at' => $faker->dateTimeBetween('-7 days', 'now'),
             ]);
         }
 
-        // Cancelled orders
+        // Cancelled orders ~$10k avg
         for ($i = 0; $i < 5; $i++) {
+            $symbol = $faker->randomElement([$btc, $eth]);
+            $isBtc = $symbol->id === $btc->id;
             Order::create([
                 'user_id' => $faker->randomElement($users)->id,
-                'symbol_id' => $faker->randomElement([$btc, $eth])->id,
+                'symbol_id' => $symbol->id,
                 'side' => $faker->randomElement(['buy', 'sell']),
-                'price' => $faker->randomFloat(2, 3000, 100000),
-                'amount' => $faker->randomFloat(8, 0.1, 5.0),
+                'price' => $isBtc ? $faker->randomFloat(2, 93000, 99000) : $faker->randomFloat(2, 3300, 4000),
+                'amount' => $isBtc ? $faker->randomFloat(8, 0.05, 0.15) : $faker->randomFloat(8, 1.5, 4.0),
                 'status' => Order::STATUS_CANCELLED,
                 'created_at' => $faker->dateTimeBetween('-7 days', 'now'),
             ]);

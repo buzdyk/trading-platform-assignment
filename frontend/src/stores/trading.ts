@@ -45,6 +45,22 @@ export const useTradingStore = defineStore('trading', () => {
     await fetchProfile()
   }
 
+  function updateOrder(order: Order): void {
+    const index = orders.value.findIndex(o => o.id === order.id)
+    if (order.status === 'open') {
+      if (index > -1) {
+        orders.value[index] = order
+      } else {
+        orders.value.push(order)
+      }
+    } else {
+      // Remove filled/cancelled orders from open orders list
+      if (index > -1) {
+        orders.value.splice(index, 1)
+      }
+    }
+  }
+
   return {
     balance,
     assets,
@@ -56,5 +72,6 @@ export const useTradingStore = defineStore('trading', () => {
     fetchSymbols,
     createOrder,
     cancelOrder,
+    updateOrder,
   }
 })

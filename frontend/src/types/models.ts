@@ -23,6 +23,7 @@ export interface Asset {
 export interface Order {
   id: number
   user_id: number
+  symbol_id: number
   symbol: string
   side: 'buy' | 'sell'
   price: string

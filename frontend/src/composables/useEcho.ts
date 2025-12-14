@@ -1,8 +1,8 @@
 import Echo from 'laravel-echo'
 import Pusher from 'pusher-js'
 import { ref, onUnmounted } from 'vue'
-import { useAuthStore } from '@/stores/auth'
 import { useTradingStore } from '@/stores/trading'
+import type { Order } from '@/types/models'
 
 declare global {
   interface Window {
@@ -12,6 +12,7 @@ declare global {
 }
 
 let echoInstance: Echo<'pusher'> | null = null
+let isSubscribed = false
 
 function getEcho(): Echo<'pusher'> {
   if (echoInstance) {
@@ -30,46 +31,59 @@ function getEcho(): Echo<'pusher'> {
     disableStats: true,
     enabledTransports: ['ws', 'wss'],
     cluster: 'mt1',
-    authEndpoint: `${import.meta.env.VITE_API_URL?.replace('/api', '')}/broadcasting/auth`,
-    auth: {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem('auth_token')}`,
+    authorizer: (channel: { name: string }) => ({
+      authorize: (socketId: string, callback: (error: Error | null, data?: { auth: string }) => void) => {
+        fetch(`${import.meta.env.VITE_API_URL}/broadcasting/auth`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
+          },
+          body: JSON.stringify({ socket_id: socketId, channel_name: channel.name }),
+        })
+          .then(response => response.json())
+          .then(data => callback(null, data))
+          .catch(error => callback(error))
       },
-    },
+    }),
   })
 
   return echoInstance
 }
 
 export function useEcho() {
-  const authStore = useAuthStore()
   const tradingStore = useTradingStore()
   const connected = ref(false)
 
   function subscribe(): void {
-    if (!authStore.user?.id) {
+    if (isSubscribed) {
       return
     }
 
     const echo = getEcho()
-    const channel = echo.private(`user.${authStore.user.id}`)
+    const channel = echo.private('orders')
 
-    channel.listen('OrderMatched', () => {
+    channel.listen('.OrderUpdated', (data: { order: Order }) => {
+      tradingStore.updateOrder(data.order)
       tradingStore.fetchProfile()
-      tradingStore.fetchOrders()
     })
 
+    isSubscribed = true
     connected.value = true
   }
 
   function unsubscribe(): void {
-    if (!authStore.user?.id || !echoInstance) {
+    if (!isSubscribed || !echoInstance) {
       return
     }
 
-    echoInstance.leave(`user.${authStore.user.id}`)
+    echoInstance.leave('private-orders')
+    isSubscribed = false
     connected.value = false
   }
+
+  // Auto-subscribe on mount
+  subscribe()
 
   onUnmounted(() => {
     unsubscribe()

@@ -25,6 +25,7 @@ class CancelOrder
                 $this->releaseSellOrderAssets($order);
             }
 
+            // Observer broadcasts update
             $order->update(['status' => Order::STATUS_CANCELLED]);
         });
     }
