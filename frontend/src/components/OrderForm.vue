@@ -21,6 +21,18 @@ const total = computed(() => {
   return price * amount
 })
 
+const selectedSymbol = computed(() =>
+  trading.symbols.find(s => s.id === form.value.symbol_id)
+)
+
+const preview = computed(() => {
+  if (!form.value.price || !form.value.amount || !selectedSymbol.value) return ''
+  const side = form.value.side.toUpperCase()
+  const amount = parseFloat(form.value.amount)
+  const price = parseFloat(form.value.price)
+  return `${side} ${amount} ${selectedSymbol.value.code} @ $${price.toLocaleString()}`
+})
+
 onMounted(async () => {
   await trading.fetchSymbols()
   const firstSymbol = trading.symbols[0]
@@ -53,13 +65,21 @@ async function handleSubmit(): Promise<void> {
     submitting.value = false
   }
 }
+
+function fill(price: string, amount: string, side: 'buy' | 'sell'): void {
+  form.value.price = price
+  form.value.amount = amount
+  form.value.side = side === 'buy' ? 'sell' : 'buy'
+}
+
+defineExpose({ fill })
 </script>
 
 <template>
   <form @submit.prevent="handleSubmit" class="rounded-lg bg-white p-4 shadow">
-    <div class="flex items-end gap-3">
+    <div class="grid grid-cols-5 items-end gap-4">
       <!-- Symbol -->
-      <div class="w-40">
+      <div>
         <label class="block text-xs font-medium text-gray-500">Symbol</label>
         <select
           v-model="form.symbol_id"
@@ -72,35 +92,38 @@ async function handleSubmit(): Promise<void> {
       </div>
 
       <!-- Side Toggle -->
-      <div class="flex gap-1">
-        <button
-          type="button"
-          @click="form.side = 'buy'"
-          :class="[
-            'rounded px-3 py-1.5 text-xs font-bold',
-            form.side === 'buy'
-              ? 'bg-green-600 text-white'
-              : 'border border-gray-300 bg-gray-100 text-gray-500',
-          ]"
-        >
-          BUY
-        </button>
-        <button
-          type="button"
-          @click="form.side = 'sell'"
-          :class="[
-            'rounded px-3 py-1.5 text-xs font-bold',
-            form.side === 'sell'
-              ? 'bg-red-600 text-white'
-              : 'border border-gray-300 bg-gray-100 text-gray-500',
-          ]"
-        >
-          SELL
-        </button>
+      <div>
+        <label class="block text-xs font-medium text-gray-500">Side</label>
+        <div class="mt-1 flex gap-1">
+          <button
+            type="button"
+            @click="form.side = 'buy'"
+            :class="[
+              'flex-1 rounded px-3 py-1.5 text-xs font-bold',
+              form.side === 'buy'
+                ? 'bg-green-600 text-white'
+                : 'border border-gray-300 bg-gray-100 text-gray-500',
+            ]"
+          >
+            BUY
+          </button>
+          <button
+            type="button"
+            @click="form.side = 'sell'"
+            :class="[
+              'flex-1 rounded px-3 py-1.5 text-xs font-bold',
+              form.side === 'sell'
+                ? 'bg-red-600 text-white'
+                : 'border border-gray-300 bg-gray-100 text-gray-500',
+            ]"
+          >
+            SELL
+          </button>
+        </div>
       </div>
 
       <!-- Price -->
-      <div class="w-32">
+      <div>
         <label class="block text-xs font-medium text-gray-500">Price</label>
         <input
           v-model="form.price"
@@ -113,7 +136,7 @@ async function handleSubmit(): Promise<void> {
       </div>
 
       <!-- Amount -->
-      <div class="w-32">
+      <div>
         <label class="block text-xs font-medium text-gray-500">Amount</label>
         <input
           v-model="form.amount"
@@ -126,20 +149,28 @@ async function handleSubmit(): Promise<void> {
       </div>
 
       <!-- Total -->
-      <div class="w-28 text-right">
+      <div>
         <label class="block text-xs font-medium text-gray-500">Total</label>
         <div class="mt-1 py-1.5 text-sm font-medium">
           ${{ total.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }}
         </div>
       </div>
+    </div>
 
-      <!-- Submit -->
+    <!-- Second row: Preview + Submit -->
+    <div class="mt-3 flex items-center justify-end gap-3">
+      <div v-if="preview" class="text-xs text-gray-500">
+        {{ preview }}
+      </div>
       <button
         type="submit"
         :disabled="submitting"
-        class="rounded-md bg-blue-600 px-4 py-1.5 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
+        :class="[
+          'rounded-md px-4 py-1.5 text-sm font-medium text-white disabled:opacity-50',
+          form.side === 'buy' ? 'bg-green-600 hover:bg-green-700' : 'bg-red-600 hover:bg-red-700',
+        ]"
       >
-        {{ submitting ? '...' : 'Place' }}
+        {{ submitting ? '...' : form.side === 'buy' ? 'Buy' : 'Sell' }}
       </button>
     </div>
 

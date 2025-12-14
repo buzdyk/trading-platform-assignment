@@ -7,6 +7,7 @@ import OrderForm from '@/components/OrderForm.vue'
 const trading = useTradingStore()
 const auth = useAuthStore()
 const cancelling = ref<number | null>(null)
+const orderFormRef = ref<InstanceType<typeof OrderForm> | null>(null)
 
 onMounted(async () => {
   await trading.fetchOrders()
@@ -20,11 +21,15 @@ async function handleCancel(orderId: number): Promise<void> {
     cancelling.value = null
   }
 }
+
+function fillForm(price: string, amount: string, side: 'buy' | 'sell'): void {
+  orderFormRef.value?.fill(price, amount, side)
+}
 </script>
 
 <template>
   <div class="space-y-4">
-    <OrderForm />
+    <OrderForm ref="orderFormRef" />
 
     <div class="rounded-lg bg-white shadow">
       <div class="border-b border-gray-200 px-6 py-4">
@@ -82,7 +87,7 @@ async function handleCancel(orderId: number): Promise<void> {
               <td class="whitespace-nowrap px-6 py-4 text-sm text-gray-500">
                 {{ new Date(order.created_at).toLocaleDateString() }}
               </td>
-              <td class="whitespace-nowrap px-6 py-4 text-right text-sm">
+              <td class="whitespace-nowrap px-6 py-4 text-right text-sm space-x-2">
                 <button
                   v-if="order.user_id === auth.user?.id"
                   @click="handleCancel(order.id)"
@@ -90,6 +95,12 @@ async function handleCancel(orderId: number): Promise<void> {
                   class="text-red-600 hover:text-red-900 disabled:opacity-50"
                 >
                   {{ cancelling === order.id ? 'Cancelling...' : 'Cancel' }}
+                </button>
+                <button
+                  @click="fillForm(order.price, order.amount, order.side)"
+                  class="text-blue-600 hover:text-blue-900"
+                >
+                  Fill
                 </button>
               </td>
             </tr>
