@@ -63,7 +63,7 @@ async function handleSubmit(): Promise<void> {
     const error = err as AxiosError<{ errors?: Record<string, string[]>; message?: string }>
     if (error.response?.data?.errors) {
       errors.value = error.response.data.errors
-      toast.error(Object.values(error.response.data.errors).flat()[0])
+      toast.error(Object.values(error.response.data.errors).flat()[0] ?? 'Validation error')
     } else if (error.response?.data?.message) {
       toast.error(error.response.data.message)
     } else {

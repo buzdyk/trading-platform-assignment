@@ -16,13 +16,14 @@ class MatchOrderTest extends TestCase
     use RefreshDatabase;
 
     private Symbol $btc;
+
     private MatchOrder $action;
 
     protected function setUp(): void
     {
         parent::setUp();
         $this->btc = Symbol::create(['code' => 'BTC', 'name' => 'Bitcoin']);
-        $this->action = new MatchOrder();
+        $this->action = new MatchOrder;
     }
 
     public function test_matches_buy_order_with_valid_sell_order(): void

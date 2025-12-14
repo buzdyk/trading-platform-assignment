@@ -11,13 +11,13 @@ class MatchOrder
 {
     public function __invoke(Order $order): ?Trade
     {
-        if (!$order->isOpen()) {
+        if (! $order->isOpen()) {
             return null;
         }
 
         $counterOrder = $this->findCounterOrder($order);
 
-        if (!$counterOrder) {
+        if (! $counterOrder) {
             return null;
         }
 

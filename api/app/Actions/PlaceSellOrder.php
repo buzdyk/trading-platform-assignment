@@ -22,7 +22,7 @@ class PlaceSellOrder
                 ->where('symbol_id', $symbolId)
                 ->first();
 
-            if (!$asset) {
+            if (! $asset) {
                 throw new InvalidArgumentException('No asset found for this symbol');
             }
 

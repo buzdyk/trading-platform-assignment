@@ -17,6 +17,7 @@ class PlaceBuyOrderTest extends TestCase
     use RefreshDatabase;
 
     private Symbol $btc;
+
     private PlaceBuyOrder $action;
 
     protected function setUp(): void

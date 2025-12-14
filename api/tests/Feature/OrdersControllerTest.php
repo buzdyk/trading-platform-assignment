@@ -15,6 +15,7 @@ class OrdersControllerTest extends TestCase
     use RefreshDatabase;
 
     private Symbol $btc;
+
     private Symbol $eth;
 
     protected function setUp(): void
@@ -64,7 +65,7 @@ class OrdersControllerTest extends TestCase
             'status' => Order::STATUS_OPEN,
         ]);
 
-        $response = $this->actingAs($user)->getJson('/api/orders?symbol_id=' . $this->btc->id);
+        $response = $this->actingAs($user)->getJson('/api/orders?symbol_id='.$this->btc->id);
 
         $response->assertStatus(200)
             ->assertJsonCount(1, 'data')
@@ -328,6 +329,7 @@ class OrdersControllerTest extends TestCase
 
         Event::assertDispatched(OrderUpdated::class, function (OrderUpdated $event) {
             $payload = $event->broadcastWith();
+
             return isset($payload['order']['id'])
                 && isset($payload['order']['symbol'])
                 && isset($payload['order']['side'])

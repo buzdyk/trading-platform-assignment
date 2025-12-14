@@ -12,7 +12,7 @@ class CancelOrder
 {
     public function __invoke(Order $order): void
     {
-        if (!$order->isOpen()) {
+        if (! $order->isOpen()) {
             throw new InvalidArgumentException('Order is not open');
         }
 

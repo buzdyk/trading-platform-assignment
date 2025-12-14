@@ -32,7 +32,7 @@ function getEcho(): Echo<'pusher'> {
     enabledTransports: ['ws', 'wss'],
     cluster: 'mt1',
     authorizer: (channel: { name: string }) => ({
-      authorize: (socketId: string, callback: (error: Error | null, data?: { auth: string }) => void) => {
+      authorize: (socketId: string, callback: (error: Error | null, data: { auth: string } | null) => void) => {
         fetch(`${import.meta.env.VITE_API_URL}/broadcasting/auth`, {
           method: 'POST',
           headers: {
@@ -43,7 +43,7 @@ function getEcho(): Echo<'pusher'> {
         })
           .then(response => response.json())
           .then(data => callback(null, data))
-          .catch(error => callback(error))
+          .catch(error => callback(error, null))
       },
     }),
   })
