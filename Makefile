@@ -14,6 +14,9 @@ up: ## Start all containers
 down: ## Stop all containers
 	docker compose down
 
+nuke: ## Stop containers and DELETE all volumes (database, redis, etc.)
+	docker compose down -v
+
 build: ## Build/rebuild containers
 	docker compose build --no-cache
 
@@ -69,7 +72,7 @@ setup: ## Initial project setup
 	docker compose exec app composer install
 	docker compose exec app php artisan key:generate
 	docker compose exec app php artisan migrate --seed
-	@echo "$(YELLOW)Setup complete! Visit http://localhost$(NC)"
+	@echo "$(YELLOW)Setup complete! Visit http://localhost:5173$(NC)"
 
 # Database
 db: ## Open PostgreSQL CLI
